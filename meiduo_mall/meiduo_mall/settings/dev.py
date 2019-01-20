@@ -25,7 +25,8 @@ SECRET_KEY = '&tdy-d+o#mjay)=w9fq)p7rz-rt^=^t4cn4h8mcux*gm0pfp0f'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# 允许那些域名来访问django
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost','www.meiduo.site','api.meiduo.site']
 
 
 # Application definition
@@ -38,10 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders', # 为了解决前后端跨域，而注册的子应用
+
     'users.apps.UsersConfig',# 注册用户的子应用
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # 最外层的中间件 中间件执行：请求从上向下，响应是从下向上的，很多地方都有跨域问题，所以放在最前面
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -78,7 +82,7 @@ WSGI_APPLICATION = 'meiduo_mall.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': '192.168.68.58',  # 数据库主机
+        'HOST': '192.168.68.26',  # 数据库主机
         'PORT': 3306,  # 数据库端口
         'USER': 'meiduo',  # 数据库用户名
         'PASSWORD': 'meiduo',  # 数据库用户密码
@@ -128,21 +132,21 @@ STATIC_URL = '/static/'
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://192.168.68.58:6379/0",
+        "LOCATION": "redis://192.168.68.26:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
     "session": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://192.168.68.58:6379/1",
+        "LOCATION": "redis://192.168.68.26:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
     "verify_codes": {
             "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://192.168.68.58:6379/2",
+            "LOCATION": "redis://192.168.68.26:6379/2",
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
             }
@@ -207,3 +211,13 @@ REST_FRAMEWORK = {
 # 修改用户模型类  String model references must be of the form 'app_label.ModelName'
 # 修改用户模型类的导包路径必须 是  应用名.模型名 这种格式
 AUTH_USER_MODEL = 'users.User'
+
+
+# 追加CORS的白名单
+CORS_ORIGIN_WHITELIST = (
+    '127.0.0.1:8080',
+    'localhost:8080',
+    'www.meiduo.site:8080',
+    'api.meiduo.site:8000'
+)
+CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
