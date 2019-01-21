@@ -1,6 +1,8 @@
 from rest_framework import serializers
 import re
 from django_redis import get_redis_connection
+from rest_framework.settings import api_settings
+
 from .models import User
 from rest_framework.response import Response
 class UserSerializer(serializers.ModelSerializer):
@@ -8,6 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(label='确认密码',write_only=True)
     sms_code = serializers.CharField(label='短信验证码',write_only=True)
     allow = serializers.CharField(label='同意协议',write_only=True)
+    token = serializers.CharField(label='状态保持token',read_only=True)  # 增减token字段,以完成状态保持
 
     class Meta:
         model=User
@@ -76,4 +79,12 @@ class UserSerializer(serializers.ModelSerializer):
         user=User(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
+        # 手动生成token
+
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER  # 加载生成载荷函数
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER  # 加载生成token函数
+
+        payload = jwt_payload_handler(user)  # 生成载荷
+        token = jwt_encode_handler(payload)  # 根据载荷生成token
+        user.token =token
         return user

@@ -1,7 +1,7 @@
 var vm = new Vue({
     el: '#app',
     data: {
-        // host: host,
+        // host:host,
         host,
         error_name: false,
         error_password: false,
@@ -17,14 +17,13 @@ var vm = new Vue({
         mobile: '',
         sms_code: '',
         allow: false,
-        sms_code_tip: '获取短信验证码',  // 短信验证码提示
-        error_sms_code_message: '',  // 验证码错误提示
-        error_name_message: '',  // 用户名错误提示
-        error_phone_message: '',  // 手机号码错误提示
-
+        sms_code_tip: '获取短信验证码',  // 获取短信验证码将来变成倒计时
+        error_sms_code_message: '',  // 短信错误提示信息
+        error_name_message: '',
+        error_phone_message: '',
     },
     methods: {
-        // 检查用户名
+// 检查用户名
         check_username: function () {
             var len = this.username.length;
             if (len < 5 || len > 20) {
@@ -66,7 +65,7 @@ var vm = new Vue({
                 this.error_check_password = false;
             }
         },
-// 检查手机号
+        // 检查手机号
         check_phone: function () {
             var re = /^1[3-9]\d{9}$/;
             if (re.test(this.mobile)) {
@@ -122,11 +121,12 @@ var vm = new Vue({
             }
 
             // 向后端接口发送请求，让后端发送短信验证码
-            // axios.get('http://127.0.0.1:8000' + '/sms_codes/' + this.mobile + '/', {
+            // axios.get('http://127.0.0.1:8000/' + '/sms_codes/' + this.mobile + '/', {
             axios.get(this.host + '/sms_codes/' + this.mobile + '/', {
                 responseType: 'json'
             })
                 .then(response => {
+                    this.error_sms_code = false;
                     // 表示后端发送短信成功
                     // 倒计时60秒，60秒后允许用户再次点击发送短信验证码的按钮
                     var num = 60;
@@ -157,7 +157,7 @@ var vm = new Vue({
                     this.sending_flag = false;
                 })
         },
-        // 注册
+// 注册
         on_submit: function () {
             this.check_username();
             this.check_pwd();
@@ -179,6 +179,12 @@ var vm = new Vue({
                     responseType: 'json'
                 })
                     .then(response => {
+                        // 记录用户的登录状态
+                        sessionStorage.clear();
+                        localStorage.clear();
+                        localStorage.token = response.data.token;
+                        localStorage.username = response.data.username;
+                        localStorage.user_id = response.data.id;
                         location.href = '/index.html';
                     })
                     .catch(error => {
@@ -197,5 +203,3 @@ var vm = new Vue({
         }
     }
 });
-
-
