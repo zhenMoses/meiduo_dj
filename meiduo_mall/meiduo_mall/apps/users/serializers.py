@@ -1,7 +1,7 @@
 from rest_framework import serializers
 import re
 from django_redis import get_redis_connection
-from rest_framework.settings import api_settings
+from rest_framework_jwt.settings import api_settings
 
 from .models import User
 from rest_framework.response import Response
@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
         # 模型中已存在的字段: id', 'username', 'password', 'mobile'
         # 输出:  'id', 'username', 'mobile'
         # 输入: 'username', 'password', 'password2', 'mobile', 'sms_code', 'allow'
-        fields=['id','username','password','password2','mobile','sms_code','allow']
+        fields=['id','username','password','password2','mobile', 'sms_code', 'allow', 'token']
 
         extra_kwargs = {
             'username': {
@@ -86,5 +86,12 @@ class UserSerializer(serializers.ModelSerializer):
 
         payload = jwt_payload_handler(user)  # 生成载荷
         token = jwt_encode_handler(payload)  # 根据载荷生成token
+
+        # 把token赋值给user.token
         user.token =token
+
+        # 创建一个序列化器对象时,如果给data参数传递实参,此时这个序列化器优先做反序列化,后面也会做好序列化操作,来获取数据之前,
+        # 必须先调用.is_valid方法,才能.data
+        # 创建序列化器对象时,如果只给instance参数传递实参,此时这个序列化器只会做序列化操作,只能通过.data属性获取序列化后面的字典
+
         return user
