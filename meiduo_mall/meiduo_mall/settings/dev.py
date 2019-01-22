@@ -38,10 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'corsheaders', # 为了解决前后端跨域，而注册的子应用
 
     'users.apps.UsersConfig',# 注册用户的子应用
+    'oauth.apps.OauthConfig', # QQ第三方登录注册子应用
 ]
 
 MIDDLEWARE = [
@@ -233,5 +235,17 @@ JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1), # 指定JWT token有效期
 
     # 修改jwt登录后响应体函数
-    'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.utils.jwt_response_payload_handler',
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.utils.jwt_response_payload_handler'
 }
+
+
+# 修改默认的认证后端
+AUTHENTICATION_BACKENDS = [
+    'users.utils.UsernameMobileAuthBackend',  # 修改django认证后端类
+]
+
+
+# QQ登录参数配置
+QQ_CLIENT_ID = '101514053'
+QQ_CLIENT_SECRET = '1075e75648566262ea35afa688073012'
+QQ_REDIRECT_URI = 'http://www.meiduo.site:8080/oauth_callback.html'
