@@ -38,7 +38,7 @@ class SMSCodeView(APIView):
         # 4把短信验证码缓存到redis  setex(key 过期时间, value)
         pl.setex('sms_%s' % mobile,constants.SMS_CODE_REDIS_EXPIRES,smc_code)
         # 4.1 存储此手机号已发送短信标记
-        pl.setex('send_flag_%s' % mobile, constants.SMS_CODE_REDIS_EXPIRES, 1)
+        pl.setex('send_flag_%s' % mobile, constants.SMS_CODE_REDIS_SIANS, 1)
 
         # 执行管道
         pl.execute()
