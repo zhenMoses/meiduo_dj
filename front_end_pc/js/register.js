@@ -46,7 +46,7 @@ var vm = new Vue({
                         }
                     })
                     .catch(error => {
-                        console.log(error.data);
+                        console.log(error.response.data);
                     })
             }
         },
@@ -87,7 +87,7 @@ var vm = new Vue({
                         }
                     })
                     .catch(error => {
-                        console.log(error.data);
+                        console.log(error.response.data);
                     })
             }
         },
@@ -147,12 +147,12 @@ var vm = new Vue({
                     }, 1000, 60)
                 })
                 .catch(error => {
-                    if (error.status == 400) {
+                    if (error.response.status == 400) {
                         // 展示发送短信错误提示
                         this.error_sms_code = true;
-                        this.error_sms_code_message = error.data.message;
+                        this.error_sms_code_message = error.response.data.message;
                     } else {
-                        console.log(error.data);
+                        console.log(error.response.data);
                     }
                     this.sending_flag = false;
                 })
@@ -188,19 +188,18 @@ var vm = new Vue({
                         location.href = '/index.html';
                     })
                     .catch(error => {
-                        if (error.status == 400) {
-                            if ('non_field_errors' in error.data) {
-                                this.error_sms_code_message = error.data.non_field_errors[0];
+                        if (error.response.status == 400) {
+                            if ('non_field_errors' in error.response.data) {
+                                this.error_sms_code_message = error.response.data.non_field_errors[0];
                             } else {
                                 this.error_sms_code_message = '数据有误';
                             }
                             this.error_sms_code = true;
                         } else {
-                            console.log(error.data);
+                            console.log(error.response.data);
                         }
                     })
             }
         }
     }
 });
-
