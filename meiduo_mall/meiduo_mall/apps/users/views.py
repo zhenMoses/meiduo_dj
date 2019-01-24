@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 
 
 from .models import User
-from .serializers import UserSerializer, UesrDetailSerializer
+from .serializers import UserSerializer, UserDetailSerializer
 
 
 # Create your views here.
@@ -15,7 +15,7 @@ from .serializers import UserSerializer, UesrDetailSerializer
 class UserDetailView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
     # serializer_class = '详情的序列化器'
-    serializer_class = UesrDetailSerializer
+    serializer_class = UserDetailSerializer
 
     def get_object(self):
         return self.request.user

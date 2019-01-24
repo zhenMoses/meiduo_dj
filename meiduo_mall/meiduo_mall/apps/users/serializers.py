@@ -6,7 +6,7 @@ from rest_framework_jwt.settings import api_settings
 from .models import User
 from rest_framework.response import Response
 
-class UesrDetailSerializer(serializers.ModelSerializer):
+class UserDetailSerializer(serializers.ModelSerializer):
     """用户详细信息序列化器"""
 
     class Meta:
