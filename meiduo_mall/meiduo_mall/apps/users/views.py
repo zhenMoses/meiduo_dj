@@ -12,13 +12,15 @@ from .serializers import UserSerializer, UserDetailSerializer
 
 # Create your views here.
 
-class UserDetailView(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
+class UserDetailView(APIView):
+    permission_classes = [IsAuthenticated]  # 指定权限,必须是通过认证的用户才能访问此接口(就是当前本网站的登录用户)
     # serializer_class = '详情的序列化器'
-    serializer_class = UserDetailSerializer
 
-    def get_object(self):
-        return self.request.user
+
+    def get_object(self,request):
+        user = request.user  # 获取本次请求的用户对象
+        serializer = UserDetailSerializer  # 指定序列化器
+        return  Response(serializer.data)
 
 
 class UserView(CreateAPIView):
