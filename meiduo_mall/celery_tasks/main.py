@@ -4,7 +4,7 @@
 from celery import Celery
 import os
 # 配置celery如果需要用配置文件时去那里加载
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "meiduo.settings.dev")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "meiduo_mall.settings.dev")
 
 # 1.创建celery客户端  (里面的meiduo_sz20只是一个别名没有任何实际意思义,不写也行)
 celery_app = Celery('meiduo_dj')

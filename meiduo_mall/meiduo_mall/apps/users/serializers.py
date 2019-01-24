@@ -2,9 +2,10 @@ from rest_framework import serializers
 import re
 from django_redis import get_redis_connection
 from rest_framework_jwt.settings import api_settings
+from rest_framework.response import Response
 
 from .models import User
-from rest_framework.response import Response
+from celery_tasks.email.tasks import send_verify_email
 
 class EmailSerializer(serializers.ModelSerializer):
     """邮箱"""
@@ -26,7 +27,11 @@ class EmailSerializer(serializers.ModelSerializer):
         """
         instance.email = validated_data['email']
         instance.save()
+        # 生成邮箱激活url
+        verify_url = instance.generate_verify_email_url()
         # 在此地发送邮箱
+        send_verify_email.delay(instance.email, verify_url)
+
         return instance
 
 

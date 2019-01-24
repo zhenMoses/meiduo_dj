@@ -6,7 +6,7 @@ from celery_tasks.main import celery_app
 
 
 @celery_app.task(name='send_verify_email')
-def send_verify_email(to_email,verify_url):
+def send_verify_email(to_email, verify_url):
     """
     发送验证邮箱邮件
     :param to_email:  收件人邮箱
