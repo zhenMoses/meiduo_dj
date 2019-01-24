@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     'users.apps.UsersConfig',# 注册用户的子应用
     'oauth.apps.OauthConfig', # QQ第三方登录注册子应用
+    'areas.apps.AreasConfig', # 省市区三级联动
 ]
 
 MIDDLEWARE = [
