@@ -6,6 +6,32 @@ from rest_framework_jwt.settings import api_settings
 from .models import User
 from rest_framework.response import Response
 
+class EmailSerializer(serializers.ModelSerializer):
+    """邮箱"""
+    class Meta:
+        model = User
+        fields = ['id', 'email']
+        extra_kwargs= {
+            'email':{
+                'required': True
+            }
+        }
+
+    def update(self, instance, validated_data):
+        """
+        更新数据库信息,保存email的信息
+        :param instance:
+        :param validated_data:
+        :return:
+        """
+        instance.email = validated_data['email']
+        instance.save()
+        # 在此地发送邮箱
+        return instance
+
+
+
+
 class UserDetailSerializer(serializers.ModelSerializer):
     """用户详细信息序列化器"""
 

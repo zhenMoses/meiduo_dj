@@ -2,6 +2,9 @@
 # 在入口文件主要做三件事: 1.创建celery客户端 Celery()  2.加载celery配置,(配置耗时任务存放的位置),
 # 3.把耗时任务添加到任务队列
 from celery import Celery
+import os
+# 配置celery如果需要用配置文件时去那里加载
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "meiduo.settings.dev")
 
 # 1.创建celery客户端  (里面的meiduo_sz20只是一个别名没有任何实际意思义,不写也行)
 celery_app = Celery('meiduo_dj')
@@ -12,4 +15,4 @@ celery_app.config_from_object('celery_tasks.config')
 # 3.注册任务
 # celery_app.autodiscover_tasks('celery_tasks.sms')  任务将来可以有多个,一定要把任务放在列表中
 
-celery_app.autodiscover_tasks(['celery_tasks.sms'])
+celery_app.autodiscover_tasks(['celery_tasks.sms','celery_tasks.email'])
