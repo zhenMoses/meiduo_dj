@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework import status
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +10,26 @@ from rest_framework.permissions import IsAuthenticated
 from .models import User
 from .serializers import UserSerializer, UserDetailSerializer, EmailSerializer
 
+class EmailVerifyView(APIView):
+    """激活邮箱
+        为什么要用APIView,因为只有查询get操作,没有用到序列化和反序列化
+    """
+    def get(self,request):
+        # 1.获取前token查询参数
+        token=request.query_params.get('token')
+        if not token:
+            return Response({'message': '缺少token'},status=status.HTTP_400_BAD_REQUEST)
+
+        # 对token解密并返回查询到的user
+        user  = User.check_verify_email_token(token)
+        if not user:
+            return Response({'message': '无效token'},status=status.HTTP_400_BAD_REQUEST)
+
+        # 修改user的email_active字段
+        user.email_active = True
+        user.save()
+
+        return Response({'message': 'ok'})
 
 class EmailView(UpdateAPIView):
     permission_classes = [IsAuthenticated]

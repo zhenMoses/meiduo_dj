@@ -22,4 +22,7 @@ urlpatterns=[
     url(r'^user/$',views.UserDetailView.as_view()),
     # 保存邮箱
     url(r'^email/$',views.EmailView.as_view()),
+
+    # 激活邮箱
+    url(r'^emails/verification/$',views.EmailVerifyView.as_view()),
 ]
