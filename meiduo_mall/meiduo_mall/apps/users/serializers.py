@@ -5,6 +5,14 @@ from rest_framework_jwt.settings import api_settings
 
 from .models import User
 from rest_framework.response import Response
+
+class UesrDetailSerializer(serializers.ModelSerializer):
+    """用户详细信息序列化器"""
+
+    class Meta:
+        model =User
+        fields=['id','username','mobile','email','email_active']
+
 class UserSerializer(serializers.ModelSerializer):
     """用户注册,创建用户的序列化器"""
     password2 = serializers.CharField(label='确认密码',write_only=True)

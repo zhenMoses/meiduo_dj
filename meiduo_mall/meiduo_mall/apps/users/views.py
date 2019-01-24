@@ -1,12 +1,26 @@
 from django.shortcuts import render
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView,RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
+
 
 from .models import User
+from .serializers import UserSerializer, UesrDetailSerializer
 
-from .serializers import UserSerializer
+
 # Create your views here.
+
+class UserDetailView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    # serializer_class = '详情的序列化器'
+    serializer_class = UesrDetailSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
 class UserView(CreateAPIView):
     # 指定序列化器
     serializer_class = UserSerializer
@@ -23,7 +37,6 @@ class UsernameCountView(APIView):
         }
 
         return Response(data)
-
 
 
 class MobileCountView(APIView):
