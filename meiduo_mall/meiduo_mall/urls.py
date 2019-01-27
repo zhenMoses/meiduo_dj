@@ -18,7 +18,12 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    # 包含发短信模块路由
     url(r'^',include('verifications.urls')),
+    # 用户模块路由
     url(r'^',include('users.urls')),
+    # qq模块
     url(r'^oauth/',include('oauth.urls')),
+    # 省市区
+    url(r'^', include('areas.urls')),
 ]

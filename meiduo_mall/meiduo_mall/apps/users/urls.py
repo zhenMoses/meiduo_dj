@@ -2,6 +2,7 @@ from django.conf.urls import url
 from . import views
 
 from rest_framework_jwt.views import obtain_jwt_token
+from  rest_framework.routers import DefaultRouter
 
 urlpatterns=[
     # 注册路由
@@ -26,3 +27,7 @@ urlpatterns=[
     # 激活邮箱
     url(r'^emails/verification/$',views.EmailVerifyView.as_view()),
 ]
+
+router = DefaultRouter()
+router.register(r'addresses', views.AddressViewSet, base_name='addresses')
+urlpatterns += router.urls

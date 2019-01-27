@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',# 注册用户的子应用
     'oauth.apps.OauthConfig', # QQ第三方登录注册子应用
     'areas.apps.AreasConfig', # 省市区三级联动
+    'goods.apps.GoodsConfig',  # 商品信息
+    'contents.apps.ContentsConfig',  # 广告信息
 ]
 
 MIDDLEWARE = [
@@ -266,3 +268,15 @@ EMAIL_HOST_USER = 'itcast99@163.com'
 EMAIL_HOST_PASSWORD = 'python99'
 #收件人看到的发件人
 EMAIL_FROM = 'python<itcast99@163.com>'
+
+
+
+
+
+# DRF扩展-mysql读取数据后缓存到redis
+REST_FRAMEWORK_EXTENSIONS = {
+    # 缓存时间
+    'DEFAULT_CACHE_RESPONSE_TIMEOUT': 60 * 60,
+    # 缓存存储
+    'DEFAULT_USE_CACHE': 'default',
+}
