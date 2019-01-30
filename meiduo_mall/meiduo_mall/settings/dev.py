@@ -41,10 +41,13 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'corsheaders', # 为了解决前后端跨域，而注册的子应用
+    'ckeditor',  # 富文本编辑器
+    'ckeditor_uploader',  # 富文本编辑器上传图片模块
 
-    'users.apps.UsersConfig',# 注册用户的子应用
-    'oauth.apps.OauthConfig', # QQ第三方登录注册子应用
-    'areas.apps.AreasConfig', # 省市区三级联动
+
+    'users.apps.UsersConfig',  # 注册用户的子应用
+    'oauth.apps.OauthConfig',  # QQ第三方登录注册子应用
+    'areas.apps.AreasConfig',  # 省市区三级联动
     'goods.apps.GoodsConfig',  # 商品信息
     'contents.apps.ContentsConfig',  # 广告信息
 ]
@@ -117,9 +120,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-hans'  # 使用中国语言
+TIME_ZONE = 'Asia/Shanghai'  # 使用中国上海时间
 
-TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -293,3 +296,14 @@ FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
 
 # django文件存储
 DEFAULT_FILE_STORAGE = 'meiduo.utils.fastdfs.fdfs_storage.FastDFSStorage'
+
+
+# 富文本编辑器ckeditor配置
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',  # 工具条功能
+        'height': 300,  # 编辑器高度
+        # 'width': 300,  # 编辑器宽
+    },
+}
+CKEDITOR_UPLOAD_PATH = ''  # 上传图片保存路径，使用了FastDFS，所以此处设为''

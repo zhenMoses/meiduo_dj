@@ -70,7 +70,7 @@ class FastDFSStorage(Storage):
 
 
 
-    
+
     """
     {'Group name': 'group1',
      'Remote file_id': 'group1/M00/00/00/wKhn0lxNDMiAeS9zAAC4j90Tziw48.jpeg',
