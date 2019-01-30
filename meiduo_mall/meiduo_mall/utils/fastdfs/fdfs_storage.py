@@ -1,5 +1,6 @@
 from django.core.files.storage import Storage
 from fdfs_client.client import Fdfs_client
+from django.conf import settings
 
 
 
@@ -7,10 +8,21 @@ from fdfs_client.client import Fdfs_client
 class FastDFSStorage(Storage):
     """自定义文件存储系统类"""
 
-    def __int__(self):
-        """初始化方法"""
+    def __init__(self, client_conf=None, base_url=None):
+        """
+        初始化方法
+        :param client_conf:   fastdfs客户端配置文件
+        :param base_url:   storage ip:端口
+        """
+        # if client_conf:
+        #     self.client_conf = client_conf
+        # else:
+        #     self.client_conf = settings.FDFS_CLIENT_CONF
 
-        pass
+        # self.client_conf = settings.FDFS_CLIENT_CONF if client_conf == None else client_conf
+        # self.client_conf = client_conf if client_conf else settings.FDFS_CLIENT_CONF
+        self.client_conf = client_conf or settings.FDFS_CLIENT_CONF
+        self.base_url = base_url or settings.FDFS_BASE_URL
 
     def _open(self,name,mode='rb'):
         """打文件,但是我们自定义文件存储系统类的目的,只是为了上传和下传,不需要打开,所以此方法什么也不做,直接pass"""
@@ -25,12 +37,13 @@ class FastDFSStorage(Storage):
         """
 
         # 1.创建fdfs客户端
-        client = Fdfs_client('meiduo_mall/utils/fastdfs/client.conf')
+        # client = Fdfs_client('meiduo_mall/utils/fastdfs/client.conf')
 
+        client = Fdfs_client(self.client_conf)
         # 2.上传文件
         ret = client.upload_appender_by_buffer(content.read())
         # 3.安全判断
-        if ret.get('Status') !='Upload successed.':
+        if ret.get('Status') != 'Upload successed.':
             raise Exception('文件上传失败')
 
         # 4.返回file_id
@@ -50,8 +63,14 @@ class FastDFSStorage(Storage):
         :param name: 此name是当初save方法中返回的file_id
         :return: storage ip:端口 + file_id
         """
-        return 'http://192.168.239.162:8888/' + name
+        # return 'http://192.168.239.162:8888/' + name
+        # return settings.FDFS_BASE_URL + name
+        return self.base_url + name
 
+
+
+
+    
     """
     {'Group name': 'group1',
      'Remote file_id': 'group1/M00/00/00/wKhn0lxNDMiAeS9zAAC4j90Tziw48.jpeg',
