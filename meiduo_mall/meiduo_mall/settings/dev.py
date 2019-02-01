@@ -220,7 +220,7 @@ REST_FRAMEWORK = {
     ),
 
     # 全局分页
-    'DEFAULT_PAGINATION_CLASS': 'meiduo.utils.paginations.StandardResultsSetPagination',
+    'DEFAULT_PAGINATION_CLASS': 'meiduo_mall.utils.paginations.StandardResultsSetPagination',
 
 }
 

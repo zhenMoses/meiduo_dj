@@ -28,4 +28,6 @@ urlpatterns = [
     url(r'^oauth/',include('oauth.urls')),
     # 省市区
     url(r'^', include('areas.urls')),
+    #商品信息
+    url(r'^', include('goods.urls')),
 ]
