@@ -219,6 +219,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',  # 基础认证
     ),
 
+    # 全局分页
+    'DEFAULT_PAGINATION_CLASS': 'meiduo.utils.paginations.StandardResultsSetPagination',
 
 }
 

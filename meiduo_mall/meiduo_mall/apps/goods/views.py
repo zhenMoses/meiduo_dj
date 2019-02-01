@@ -1,6 +1,9 @@
 from django.shortcuts import render
 
 from rest_framework.generics import ListAPIView
+from rest_framework.filters import OrderingFilter
+
+
 
 from .models import SKU
 from .serializers import SKUSerializer
@@ -14,6 +17,11 @@ class SKUListView(ListAPIView):
 
     # 指定序列化器
     serializer_class = SKUSerializer
+
+    # 指定过滤后端为排序
+    filter_backends = [OrderingFilter]
+    # 指定排序字段
+    ordering_fields = ['create_time', 'price', 'sales']
 
     # 指定查询集
     # queryset = SKU.objects.filter(is_launched=True, category_id=category_id)
