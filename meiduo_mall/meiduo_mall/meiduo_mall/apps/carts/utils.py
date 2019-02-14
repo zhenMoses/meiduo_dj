@@ -38,7 +38,7 @@ def merge_cart_cookie_to_redis(request, user, response):
     for sku_id in cookie_dict:
         redis_conn.hset('cart_%d' % user.id,sku_id,cookie_dict[sku_id]['count'])
         if cookie_dict[sku_id]['selected']:
-            redis_conn.smembers('selected_%d' % user.id, sku_id)
+            redis_conn.sadd('selected_%d' % user.id, sku_id)
 
     # 把cookie购物车数据清空
     response.delete_cookie('carts')

@@ -143,8 +143,7 @@ class CartView(APIView):
         # 以下序列化的代码无论登录还是未登录都要执行,注意缩进问题
         # 获取购物车中所有商品的sku模型
         skus = SKU.objects.filter(id__in=cart_dict.keys())
-        print(cart_dict)
-        print(cart_dict.keys())
+
         for sku in skus:
             # 遍历skus查询集,给里面的每个sku模型追加两个属性
             sku.count = cart_dict[sku.id]['count']

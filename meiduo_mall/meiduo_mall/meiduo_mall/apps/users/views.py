@@ -1,15 +1,20 @@
+from datetime import datetime
+
 from django.shortcuts import render
 from django_redis import get_redis_connection
 from rest_framework import status
 from rest_framework.decorators import action
 
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView,RetrieveAPIView,UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.mixins import CreateModelMixin,UpdateModelMixin,ListModelMixin
 from rest_framework.viewsets import GenericViewSet
+from rest_framework_jwt.views import ObtainJSONWebToken, jwt_response_payload_handler
 
+from carts.utils import merge_cart_cookie_to_redis
 from goods.models import SKU
 from goods.serializers import SKUSerializer
 from users import constants
@@ -17,6 +22,17 @@ from .models import User
 from .serializers import UserSerializer, UserDetailSerializer, EmailSerializer, UserAddressSerializer, \
     AddressTitleSerializer,UserBrowseHistorySerializer
 
+
+class UserAuthorizeView(ObtainJSONWebToken):
+    """重写账号密码登录视图"""
+    def post(self, request, *args, **kwargs):
+        response = super(UserAuthorizeView, self).post(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.object.get('user') or request.user
+            merge_cart_cookie_to_redis(request, user, response)
+
+            return response
 
 class UserBrowseHistoryView(CreateAPIView):
     """用户浏览商品记录"""
