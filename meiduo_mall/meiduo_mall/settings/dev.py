@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'areas.apps.AreasConfig',  # 省市区三级联动
     'goods.apps.GoodsConfig',  # 商品信息
     'contents.apps.ContentsConfig',  # 广告信息
+    'carts.apps.CartsConfig',
 ]
 
 MIDDLEWARE = [
@@ -156,6 +157,13 @@ CACHES = {
     "verify_codes": {
             "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": "redis://127.0.0.1:6379/2",
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        },
+    "cart": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://127.0.0.1:6379/4",
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
             }
