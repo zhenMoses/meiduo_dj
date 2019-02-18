@@ -14,10 +14,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url,include
-from django.contrib import admin
+import xadmin
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    # url(r'^admin/', admin.site.urls),
+url(r'xadmin/', include(xadmin.site.urls)),
     # 富文本编辑界面路由
     url(r'^ckeditor/', include('ckeditor_uploader.urls')),
     # 包含发短信模块路由
@@ -28,6 +29,12 @@ urlpatterns = [
     url(r'^oauth/',include('oauth.urls')),
     # 省市区
     url(r'^', include('areas.urls')),
-    #商品信息
+    # 商品信息
     url(r'^', include('goods.urls')),
+    # 购物车
+    url(r'^', include('carts.urls')),
+    # 订单模块
+    url(r'^', include('orders.urls')),
+    #支付宝模块
+    url(r'^', include('payment.urls')),
 ]

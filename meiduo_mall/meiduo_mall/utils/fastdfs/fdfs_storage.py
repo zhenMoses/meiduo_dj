@@ -63,7 +63,7 @@ class FastDFSStorage(Storage):
         :param name: 此name是当初save方法中返回的file_id
         :return: storage ip:端口 + file_id
         """
-        # return 'http://192.168.239.162:8888/' + name
+        # return 'http://192.168.239.135:8888/' + name
         # return settings.FDFS_BASE_URL + name
         return self.base_url + name
 

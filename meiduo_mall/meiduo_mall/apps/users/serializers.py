@@ -4,10 +4,102 @@ from django_redis import get_redis_connection
 from rest_framework_jwt.settings import api_settings
 from rest_framework.response import Response
 
+from goods.models import SKU
 from .models import User, Address
 from celery_tasks.email.tasks import send_verify_email
 
 
+# class PasswordUpdateSerializer(serializers.ModelSerializer):
+#     """修改密码"""
+#     password1 = serializers.CharField(label='新认密码', write_only=True)
+#     password2 = serializers.CharField(label='确认密码', write_only=True)
+#
+#     class Meta:
+#         model = User
+#         fields = ['id', 'password', 'password1', 'password2']
+#         extra_kwargs ={
+#             'password1': {
+#                 'write_only': True,
+#                 'min_length': 8,
+#                 'max_length': 20,
+#                 'error_messages': {
+#                     'min_length': '仅允许8-20个字符的密码',
+#                     'max_length': '仅允许8-20个字符的密码',
+#                 }
+#             }
+#             }
+#
+#     def validate(self, data):
+#         # 判断两次密码
+#         user_id = data['id']
+#         password = data['password']
+#         try:
+#             User.objects.get(user_id=user_id, password=password)
+#         except User.DoesExist:
+#             raise serializers.ValidationError('旧密码输入错误')
+#         else:
+#             if data['password1'] != data['password2']:
+#                 raise serializers.ValidationError('两次密码不一致')
+#             elif data['password'] == data['password1'] and data['password2']:
+#                 raise serializers.ValidationError('新旧密码一致,请更改')
+#
+#     def update(self, instance, validated_data):
+#         instance.password = validated_data['password1']
+#         instance.save()
+#
+#         return instance
+
+
+class UserBrowseHistorySerializer(serializers.Serializer):
+    """浏览记录"""
+    sku_id = serializers.IntegerField(label='商品id', min_value=1)
+
+    def validate_sku_id(self, value):
+        """
+        对sku_id 进行额外的校验
+        :param value: sku_id
+        :return: value
+        """
+        try:
+            SKU.objects.get(id=value)
+        except SKU.DoesNotExist:
+            raise serializers.ValidationError('sku_id不存在')
+        # 返回出去
+        return value
+
+    def create(self, validated_data):
+        """重写此方法把sku_id存储到redis    validated_data: {'sku_id: 1}"""
+
+        # 创建redis连接对象
+        redis_conn = get_redis_connection('history')
+
+        # 获取user_id
+        user_id = self.context['request'].user.id
+
+        # 获取sku_id
+        sku_id = validated_data.get('sku_id')
+
+        if sku_id == None:
+            return Response({'message': '商品不存在'})
+
+        # 创建管道对象
+        pl = redis_conn.pipeline()
+
+
+            # 先去重
+        # # redis_conn.lrem(key, count, value)
+        pl.lrem('history_%d' % user_id, 0, sku_id)
+
+        # 存储到列表的最前面
+        pl.lpush('history_%d' % user_id, sku_id)
+        # 截取前5个
+        pl.ltrim('history_%d' % user_id,0,4)
+
+        # 执行管道
+        pl.execute()
+
+        # 返回
+        return validated_data
 
 
 class UserAddressSerializer(serializers.ModelSerializer):
@@ -50,13 +142,12 @@ class AddressTitleSerializer(serializers.ModelSerializer):
         fields = ('title',)
 
 
-
 class EmailSerializer(serializers.ModelSerializer):
     """邮箱"""
     class Meta:
         model = User
         fields = ['id', 'email']
-        extra_kwargs= {
+        extra_kwargs = {
             'email':{
                 'required': True
             }
@@ -79,14 +170,13 @@ class EmailSerializer(serializers.ModelSerializer):
         return instance
 
 
-
-
 class UserDetailSerializer(serializers.ModelSerializer):
     """用户详细信息序列化器"""
 
     class Meta:
         model = User
         fields = ['id', 'username', 'mobile', 'email', 'email_active']
+
 
 class UserSerializer(serializers.ModelSerializer):
     """用户注册,创建用户的序列化器"""
@@ -178,3 +268,5 @@ class UserSerializer(serializers.ModelSerializer):
         # 创建序列化器对象时,如果只给instance参数传递实参,此时这个序列化器只会做序列化操作,只能通过.data属性获取序列化后面的字典
 
         return user
+
+

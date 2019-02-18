@@ -1,18 +1,86 @@
+from datetime import datetime
+
 from django.shortcuts import render
+from django_redis import get_redis_connection
 from rest_framework import status
 from rest_framework.decorators import action
 
 from rest_framework.response import Response
+from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView,RetrieveAPIView,UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.mixins import CreateModelMixin,UpdateModelMixin,ListModelMixin
 from rest_framework.viewsets import GenericViewSet
+from rest_framework_jwt.views import ObtainJSONWebToken, jwt_response_payload_handler
 
+from carts.utils import merge_cart_cookie_to_redis
+from goods.models import SKU
+from goods.serializers import SKUSerializer
 from users import constants
 from .models import User
 from .serializers import UserSerializer, UserDetailSerializer, EmailSerializer, UserAddressSerializer, \
-    AddressTitleSerializer
+    AddressTitleSerializer, UserBrowseHistorySerializer
+
+# class PasswordUpdateView(UpdateAPIView):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = PasswordUpdateSerializer
+# class PasswordUpdateView(APIView):
+#     permission_classes = [IsAuthenticated]
+#
+#     def put(self,request,pk):
+#         data =request.data
+#         try:
+#             user = User.objects.get(id=pk)
+#         except User.DoesExist:
+#             raise Exception('用户不存在')
+#         if not user.check_password(data['old_pwd']):
+#             raise Exception('原密码错误')
+#         if data['new_pwd'] !=data['new_cpwd']:
+#             raise Exception('两次密码输入不一致')
+#         user.set_password(data['new_pwd'])
+#         user.save()
+#         return Response({"message":'OK'})
+
+
+
+class UserAuthorizeView(ObtainJSONWebToken):
+    """重写账号密码登录视图"""
+    def post(self, request, *args, **kwargs):
+        response = super(UserAuthorizeView, self).post(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.object.get('user') or request.user
+            merge_cart_cookie_to_redis(request, user, response)
+
+            return response
+
+
+class UserBrowseHistoryView(CreateAPIView):
+    """用户浏览商品记录"""
+    serializer_class = UserBrowseHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+
+    def get(self,request):
+        """读取用户的浏览记录"""
+        # 创建redis连接对象
+        redis_conn = get_redis_connection('history')
+        # 查询出redis中当前登录用户的浏览记录[b'1', b'2', b'3']
+        sku_ids = redis_conn.lrange('history_%d' % request.user.id, 0, -1)
+
+        # 把sku_id对应的sku模型取出来
+        # skus = SKU.objects.filter(id__in=sku_ids)  # 此查询它会对数据进行排序处理
+        # 查询sku列表数据
+        sku_list = []
+        for sku_id in sku_ids:
+            sku = SKU.objects.get(id=sku_id)
+            sku_list.append(sku)
+
+        # 序列化器
+        serializer = SKUSerializer(sku_list, many=True)
+
+        return Response(serializer.data)
 
 
 class AddressViewSet(CreateModelMixin, UpdateModelMixin, GenericViewSet):
@@ -91,6 +159,7 @@ class AddressViewSet(CreateModelMixin, UpdateModelMixin, GenericViewSet):
         serializer.save()
         return Response(serializer.data)
 
+
 class EmailVerifyView(APIView):
     """激活邮箱
         为什么要用APIView,因为只有查询get操作,没有用到序列化和反序列化
@@ -111,6 +180,7 @@ class EmailVerifyView(APIView):
         user.save()
 
         return Response({'message': 'ok'})
+
 
 class EmailView(UpdateAPIView):
     permission_classes = [IsAuthenticated]

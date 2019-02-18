@@ -26,8 +26,7 @@ SECRET_KEY = '&tdy-d+o#mjay)=w9fq)p7rz-rt^=^t4cn4h8mcux*gm0pfp0f'
 DEBUG = True
 
 # 允许那些域名来访问django
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost','www.meiduo.site','api.meiduo.site']
-
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'www.meiduo.site', 'api.meiduo.site']
 
 # Application definition
 
@@ -40,18 +39,23 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'corsheaders', # 为了解决前后端跨域，而注册的子应用
+    'corsheaders',  # 为了解决前后端跨域，而注册的子应用
     'ckeditor',  # 富文本编辑器
     'ckeditor_uploader',  # 富文本编辑器上传图片模块
     'django_crontab',  # 定时任务
-
+    'haystack',  # 商品搜索
+    # 以下是应用xadmin的注册
+    'xadmin',
+    'crispy_forms',
+    'reversion',
 
     'users.apps.UsersConfig',  # 注册用户的子应用
     'oauth.apps.OauthConfig',  # QQ第三方登录注册子应用
     'areas.apps.AreasConfig',  # 省市区三级联动
     'goods.apps.GoodsConfig',  # 商品信息
     'contents.apps.ContentsConfig',  # 广告信息
-    'carts.apps.CartsConfig',
+    'orders.apps.OrdersConfig',  # 订单结算
+    'payment.apps.PaymentConfig',  # 支付宝
 ]
 
 MIDDLEWARE = [
@@ -85,7 +89,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'meiduo_mall.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -97,9 +100,19 @@ DATABASES = {
         'USER': 'root',  # 数据库用户名
         'PASSWORD': 'mysql',  # 数据库用户密码
         'NAME': 'meiduo_django'  # 数据库名字
-    }
+    },
+    'slave': {
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '0.0.0.0',  # 数据库主机
+        'PORT': 8306,  # 数据库端口
+        'USER': 'meiduo',  # 数据库用户名
+        'PASSWORD': 'meiduo',  # 数据库用户密码
+        'NAME': 'meiduo_django'  # 数据库名字
+    },
 }
 
+# 配置读写分离
+DATABASE_ROUTERS = ['meiduo_mall.utils.db_router.MasterSlaveDBRouter']
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -118,20 +131,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
 LANGUAGE_CODE = 'zh-hans'  # 使用中国语言
 TIME_ZONE = 'Asia/Shanghai'  # 使用中国上海时间
 
-
 USE_I18N = True
 
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
@@ -155,23 +165,29 @@ CACHES = {
         }
     },
     "verify_codes": {
-            "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://127.0.0.1:6379/2",
-            "OPTIONS": {
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            }
-        },
-    "cart": {
-            "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": "redis://127.0.0.1:6379/4",
-            "OPTIONS": {
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            }
-        },
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/2",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    "history": {  # 存储浏览记录
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    "cart": {  # 存储浏览记录
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/4",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
 }
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
-
 
 # 日志
 LOGGING = {
@@ -215,7 +231,6 @@ LOGGING = {
     }
 }
 
-
 # DRF配置项
 REST_FRAMEWORK = {
     # 自定义异常捕获
@@ -232,11 +247,9 @@ REST_FRAMEWORK = {
 
 }
 
-
 # 修改用户模型类  String model references must be of the form 'app_label.ModelName'
 # 修改用户模型类的导包路径必须 是  应用名.模型名 这种格式
 AUTH_USER_MODEL = 'users.User'
-
 
 # 追加CORS的白名单
 CORS_ORIGIN_WHITELIST = (
@@ -249,25 +262,21 @@ CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
 
 #  指明token的有效期
 JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1), # 指定JWT token有效期
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),  # 指定JWT token有效期
 
     # 修改jwt登录后响应体函数
     'JWT_RESPONSE_PAYLOAD_HANDLER': 'users.utils.jwt_response_payload_handler'
 }
-
 
 # 修改默认的认证后端
 AUTHENTICATION_BACKENDS = [
     'users.utils.UsernameMobileAuthBackend',  # 修改django认证后端类
 ]
 
-
 # QQ登录参数配置
 QQ_CLIENT_ID = '101514053'
 QQ_CLIENT_SECRET = '1075e75648566262ea35afa688073012'
 QQ_REDIRECT_URI = 'http://www.meiduo.site:8080/oauth_callback.html'
-
-
 
 # 设置邮箱的配置信息
 # Django中内置了邮件发送功能，被定义在django.core.mail模块中
@@ -276,16 +285,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_PORT = 25
 
 EMAIL_HOST = 'smtp.163.com'
-#发送邮件的邮箱
+# 发送邮件的邮箱
 EMAIL_HOST_USER = 'itcast99@163.com'
-#在邮箱中设置的客户端授权密码
+# 在邮箱中设置的客户端授权密码
 EMAIL_HOST_PASSWORD = 'python99'
-#收件人看到的发件人
+# 收件人看到的发件人
 EMAIL_FROM = 'python<itcast99@163.com>'
-
-
-
-
 
 # DRF扩展-mysql读取数据后缓存到redis
 REST_FRAMEWORK_EXTENSIONS = {
@@ -295,19 +300,12 @@ REST_FRAMEWORK_EXTENSIONS = {
     'DEFAULT_USE_CACHE': 'default',
 }
 
-
-
-
-
-
- # FastDFS 存储文件系统
-FDFS_BASE_URL = 'http://192.168.239.162:8888/'
+# FastDFS 存储文件系统
+FDFS_BASE_URL = 'http://192.168.239.135:8888/'
 FDFS_CLIENT_CONF = os.path.join(BASE_DIR, 'utils/fastdfs/client.conf')
-
 
 # django文件存储
 DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fdfs_storage.FastDFSStorage'
-
 
 # 富文本编辑器ckeditor配置
 CKEDITOR_CONFIGS = {
@@ -319,16 +317,32 @@ CKEDITOR_CONFIGS = {
 }
 CKEDITOR_UPLOAD_PATH = ''  # 上传图片保存路径，使用了FastDFS，所以此处设为''
 
-
 # 页面静态化时,生成的静态html文件保存目录
 GENERATED_STATIC_HTML_FILES_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'front_end_pc')
-
 
 # 定时任务
 CRONJOBS = [
     # 每5分钟执行一次生成主页静态文件
-    ('*/1 * * * *', 'contents.crons.generate_static_index_html', '>> /home/python/Desktop/meiduo_dj/meiduo_mall/logs/crontab.log')
+    ('*/1 * * * *', 'contents.crons.generate_static_index_html',
+     '>> /home/python/Desktop/meiduo_dj/meiduo_mall/logs/crontab.log')
 ]
 
 # 解决crontab中文问题
 CRONTAB_COMMAND_PREFIX = 'LANG_ALL=zh_cn.UTF-8'
+
+# Haystack
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://192.168.239.135:9200/',  # 此处为elasticsearch运行的服务器ip地址，端口号固定为9200
+        'INDEX_NAME': 'meiduo',  # 指定elasticsearch建立的索引库的名称
+    },
+}
+
+# 当添加、修改、删除数据时，自动生成索引
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+# 支付宝
+ALIPAY_APPID = "2016092500589673"
+ALIPAY_URL = "https://openapi.alipaydev.com/gateway.do"
+ALIPAY_DEBUG = True

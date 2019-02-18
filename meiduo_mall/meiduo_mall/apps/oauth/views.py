@@ -11,6 +11,7 @@ import logging
 from oauth.models import QQAuthUser
 from oauth.utils import generate_save_user_token
 from oauth.serializers import QQAuthUserSerializer
+from carts.utils import merge_cart_cookie_to_redis
 
 logger = logging.getLogger('django')
 
@@ -59,11 +60,17 @@ class QQAuthUserView(APIView):
             token = jwt_encode_handler(payload)  # 根据载荷生成token
 
             # 返回值
-            return Response({
+            response = Response({
                 'token': token,
                 'username': user.username,
                 'user_id': user.id,
             })
+
+            # 做cookie购物车合并到redis操作
+            merge_cart_cookie_to_redis(request, user, response)
+
+
+            return response
 
     def post(self,request):
         """openid绑定到用户"""
@@ -85,12 +92,16 @@ class QQAuthUserView(APIView):
         payload = jwt_payload_handler(user)  # 生成载荷
         token = jwt_encode_handler(payload)  # 根据载荷生成token
 
-
-        return Response({
-            'token':token,
-            'username':user.username,
-            'user_id':user.id
+        response =Response({
+            'token': token,
+            'username': user.username,
+            'user_id': user.id
         })
+
+        # 做cookie购物车合并到redis操作
+        merge_cart_cookie_to_redis(request,user,response)
+
+        return response
 
 
 

@@ -43,7 +43,7 @@ class SKUImageAdmin(admin.ModelAdmin):
     """SKU中的图片"""
     def save_model(self, request, obj, form, change):
         obj.save()
-        sku= obj.sku  # 获取图片所对应的sku
+        sku = obj.sku  # 获取图片所对应的sku
 
         if sku.default_image_url == None: # 如果当前sku没有默认的图片
             sku.default_image_url = obj.image.url # 把当前的图片路径设置到sku中
